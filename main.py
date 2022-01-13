@@ -1,4 +1,4 @@
-import tkinter
+from utils import *
 import imutils
 import cv2
 import numpy as np
@@ -6,19 +6,26 @@ from scipy.spatial import distance as dist
 import pyttsx3
 import os
 from tkinter import *
-from tkinter import *
 from tkinter.filedialog import askopenfilename
 root = Tk()
-from utils import *
+
+text_box = ''
+ws = ''
+
 
 def email_config():
+    global ws
     ws = Tk()
     ws.title('Email configuration')
     ws.geometry('400x300')
     ws.config(bg='#84BF04')
 
-    message ='''admin@gmail.com
-jithin.qis@gmail.com'''
+    fp = open('emails.txt')
+    emails = fp.read()
+
+    message = emails
+
+    global text_box
 
     text_box = Text(
         ws,
@@ -27,9 +34,20 @@ jithin.qis@gmail.com'''
     )
     text_box.pack(expand=True)
     text_box.insert('end', message)
-    # text_box.config(state='disabled')
+
+    b = Button(text='Save Email-IDs', width=45, height=2, command=save_email, bg='#0052cc',
+               fg='#ffffff', activebackground='#0052cc', activeforeground='#aaffaa').pack(expand=True)
 
     ws.mainloop()
+
+
+def save_email():
+    d = text_box.get("1.0", END)
+    fp = open('emails.txt', 'w')
+    fp.write(d)
+    fp.close()
+    ws.destroy()
+
 
 def converttext(message):
     engine = pyttsx3.init()
@@ -39,13 +57,19 @@ def converttext(message):
 
 MIN_CONF = 0.3
 NMS_THRESH = 0.3
+
 labelsPath = os.path.join(os.getcwd(), 'coco.names')
 LABELS = open(labelsPath).read().strip().split("\n")
 
 weightsPath = os.path.join(os.getcwd(), 'yolov3_test.weights')
 configPath = os.path.join(os.getcwd(), 'yolov3.cfg')
-
-net = cv2.dnn.readNetFromDarknet(configPath, weightsPath)
+try:
+    net = cv2.dnn.readNetFromDarknet(configPath, weightsPath)
+except Exception as e:
+    print('''
+    Files missing
+    ''')
+    quit()
 
 ln = net.getLayerNames()
 ln = [ln[i[0] - 1] for i in net.getUnconnectedOutLayers()]
@@ -64,7 +88,8 @@ while True:
     personIdx = LABELS.index("person")
     (H, W) = frame.shape[:2]
     results = []
-    blob = cv2.dnn.blobFromImage(frame, 1 / 255.0, (416, 416), swapRB=True, crop=False)
+    blob = cv2.dnn.blobFromImage(
+        frame, 1 / 255.0, (416, 416), swapRB=True, crop=False)
     net.setInput(blob)
     layerOutputs = net.forward(ln)
     boxes = []
@@ -115,7 +140,8 @@ while True:
         cv2.circle(frame, (cX, cY), 5, color, 1)
     text = "Social Distancing Violations: {}".format(len(violate))
     csv_edit(violations=len(violate) if violate else 'No Violations')
-    cv2.putText(frame, text, (10, frame.shape[0] - 25), cv2.FONT_HERSHEY_SIMPLEX, 0.85, (0, 0, 255), 3)
+    cv2.putText(frame, text, (10, frame.shape[0] - 25),
+                cv2.FONT_HERSHEY_SIMPLEX, 0.85, (0, 0, 255), 3)
     print(text)
 
     d = 1
@@ -123,18 +149,19 @@ while True:
         cv2.imshow("Frame", frame)
         key = cv2.waitKey(1) & 0xFF
         if key == ord("q"):
+            os.remove('report.csv')
             break
         if key == ord("e"):
             email_config()
         if key == ord("s"):
             print('Sending email.... please wait...')
+            data = open('emails.txt').read().split('\n')
             send_email(fromaddr='socialdistancemonitor@gmail.com',
-            pword='quest@123',
-            toaddr='j4jithinj@gmail.com',
-            file_path='sample.csv')
+                       pword='quest@123',
+                       toaddr=data,
+                       file_path='report.csv')
             print('File sent')
-            os.remove('sample.csv')
-            
+            os.remove('report.csv')
 
     if alert != []:
         converttext('maintain social distance')
