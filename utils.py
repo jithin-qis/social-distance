@@ -15,28 +15,28 @@ def csv_edit(violations='No violations'):
         up_dt = []
         for r in dt:
             row = {
-                'Sno': r['Sno'],
-                'violations': r['violations'],
-                'time': r['time'],
+                'No.': r['No.'],
+                'Violations': r['Violations'],
+                'Time': r['Time'],
             }
             up_dt.append(row)
         f.close()
     except:pass
     op = open(FILE_PATH, "w", newline='')
-    headers = ['Sno', 'violations', 'time']
+    headers = ['No.', 'Violations', 'Time']
     data = csv.DictWriter(op, delimiter=',', fieldnames=headers)
     data.writerow(dict((heads, heads) for heads in headers))
     new = {}
-    new['violations']=str(violations)
+    new['Violations']=str(violations)
     current_time = time.localtime()
     time.strftime('%Y-%m-%d %A', current_time)
     time.strftime('%Y Week %U Day %w', current_time)
     time.strftime('%a, %d %b %Y %H:%M:%S GMT', current_time)
-    new['time']=time.strftime('%a, %d %b %Y %H:%M:%S GMT', current_time)
+    new['Time']=time.strftime('%a, %d %b %Y %H:%M:%S GMT', current_time)
     try:
-        new['Sno']=str(int(up_dt[-1]['Sno'])+1) 
+        new['No.']=str(int(up_dt[-1]['Sno'])+1) 
     except:
-        new['Sno']=1
+        new['No.']=1
         
     up_dt.append(new)
     data.writerows(up_dt)
