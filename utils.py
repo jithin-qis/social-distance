@@ -5,6 +5,15 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
 from email import encoders
+from utils import *
+import imutils
+import cv2
+import numpy as np
+from scipy.spatial import distance as dist
+import pyttsx3
+import os
+from tkinter import *
+from tkinter.filedialog import askopenfilename
 
 def csv_edit(violations='No violations'):
     FILE_PATH = 'report.csv'
@@ -112,3 +121,48 @@ Greetings from SDV-System,
     # s.sendmail(fromaddr, emails, text)
     # terminating the session
     s.quit()
+
+text_box = ''
+ws = ''
+
+
+def email_config():
+    global ws
+    ws = Tk()
+    ws.title('Email configuration')
+    ws.geometry('400x300')
+    ws.config(bg='#84BF04')
+
+    fp = open('emails.txt')
+    emails = fp.read()
+
+    message = emails
+
+    global text_box
+
+    text_box = Text(
+        ws,
+        height=12,
+        width=40
+    )
+    text_box.pack(expand=True)
+    text_box.insert('end', message)
+
+    b = Button(ws,text='Save Email-IDs', width=45, height=2, command=save_email, bg='#0052cc',
+               fg='#ffffff', activebackground='#0052cc', activeforeground='#aaffaa').pack(expand=True)
+
+    ws.mainloop()
+
+
+def save_email():
+    d = text_box.get("1.0", END)
+    fp = open('emails.txt', 'w')
+    fp.write(d)
+    fp.close()
+    ws.destroy()
+
+
+def converttext(message):
+    engine = pyttsx3.init()
+    engine.say(message)
+    engine.runAndWait()
