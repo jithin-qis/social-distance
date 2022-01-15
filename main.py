@@ -8,7 +8,7 @@ import os
 from tkinter import *
 from tkinter.filedialog import askopenfilename
 root = Tk()
-from login import USERNAME, PASSWORD
+from settings import *
 text_box = ''
 ws = ''
 
@@ -96,16 +96,16 @@ def converttext(message):
 MIN_CONF = 0.3
 NMS_THRESH = 0.3
 
-labelsPath = os.path.join(os.getcwd(), 'coco.names')
+labelsPath = os.path.join(os.getcwd(), NAMES_FILE)
 LABELS = open(labelsPath).read().strip().split("\n")
 
-weightsPath = os.path.join(os.getcwd(), 'yolov3_test.weights')
-configPath = os.path.join(os.getcwd(), 'yolov3.cfg')
+weightsPath = os.path.join(os.getcwd(), WEIGHT_FILE)
+configPath = os.path.join(os.getcwd(), CFG_FILE)
 try:
     net = cv2.dnn.readNetFromDarknet(configPath, weightsPath)
 except Exception as e:
     print('''
-    Files missing
+    Files missing, please read readme file and check settings.py
     ''')
     quit()
 
